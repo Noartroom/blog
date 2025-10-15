@@ -22,7 +22,7 @@ InteractionRaycast.prototype.initialize = function() {
     // These variables act like private members for our script instance
     this._highlightedEntity = null;
     this._originalEmissive = new pc.Color();
-    this._highlightColor = new pc.Color(0.8, 0, 0); // Light color
+    this._highlightColor = new pc.Color(1, 1, 1); // Light color
 
     // --- Event Listeners ---
     this.app.mouse.on(pc.EVENT_MOUSEDOWN, this.doRaycast, this);

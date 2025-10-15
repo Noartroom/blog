@@ -10,8 +10,6 @@
 </div>
 
 <script>
-/*   import * as pc from 'playcanvas/build/playcanvas.min.mjs';
- */
   declare const pc: any;
   (window as any).pc = pc;
 
@@ -65,13 +63,13 @@
 
     const screenPosPacked = wasmModule.exports.get_2d_pos();
     const lightScreenPos = unpack_coords(screenPosPacked);
-    // Manu: Update CSS variables for the light effect
+    // Update CSS variables for the light effect
     document.body.style.setProperty('--light-x', `${lightScreenPos.x}px`);
     document.body.style.setProperty('--light-y', `${lightScreenPos.y}px`);
 
     const pos3dPacked = wasmModule.exports.get_3d_pos();
     const light3dPos = unpack_coords(pos3dPacked);
-    // Manu: Update the PlayCanvas light position vom dynamic light
+    // Update the PlayCanvas light position vom dynamic light
     const dynamicLight = pcApp.root.findByName('MyDynamicLight');
     if (dynamicLight) {
         dynamicLight.setPosition(light3dPos.x ?? 0, 2.0, light3dPos.y ?? 0);
@@ -82,10 +80,6 @@
 
   // --- PlayCanvas Setup (Fully Corrected) ---
   async function initializeViewer() {
-    /* const pc = await import('playcanvas'); */
-    // Expose the 'pc' object globally so that external scripts like orbit-camera.js can access it.
-    /* (window as any).pc = pc; */
-
       await new Promise<void>(resolve => {
       const interval = setInterval(() => {
         if ((window as any).Ammo) {
@@ -111,7 +105,7 @@
     app.setCanvasResolution(pc.RESOLUTION_AUTO);
     window.addEventListener('resize', () => app.resizeCanvas());
     
-    // Load assets (Manu)
+    // Load assets
     const assets = [
         new pc.Asset('model', 'container', { url: ASSET_PATHS.model }),
         new pc.Asset('darkModel', 'container', { url: ASSET_PATHS.darkModel }),
@@ -138,11 +132,8 @@
               console.error(`❌ FAILED to load asset: ${asset.name} - URL: ${asset.file.url} - Error: ${err}`);
           });
         });
-    /*
-    let modelEntity: pc.Entity | null = null; // Declare modelEntity in the outer scope
- */
 
-    // Configure scene Manu: HIer ist das meiste drin
+    // Configure scene
     const buildScene = () => {
         // For more complex lighting setup, (needs some more setup config
         // app.scene.clusteredLightingEnabled = true;
@@ -164,39 +155,32 @@
 
         const darkModelEntity = (darkModelAsset.resource).instantiateRenderEntity();
         darkModelEntity.name = 'darkModel';
-        // app.root.addChild(darkModelEntity);
-
-        // --- Instantiate single Model (commented out) ---
-        /* const containerResource = modelAsset.resource as pc.ContainerResource;
-        const modelEntity = containerResource.instantiateRenderEntity(); */ // Assign to outer-scope variable
-        
-        // const modelEntity = (modelAsset.resource as unknown as pc.ContainerResource).instantiateRenderEntity();
-        // app.root.addChild(modelEntity as unknown as pc.GraphNode);
-
+       
         // Add physics components for raycasting (commented out)
-        [modelEntity, darkModelEntity].forEach(model => {
-          const embeddedLights = model.findComponents('light');
+        [modelEntity, darkModelEntity].forEach(m => {
+          const embeddedLights = m.findComponents('light');
           if (embeddedLights.length > 0) {
-              console.warn(`Found and destroyed ${embeddedLights.length} light(s) embedded in model: ${model.name}`);
+              console.warn(`Found and destroyed ${embeddedLights.length} light(s) embedded in model: ${m.name}`);
               embeddedLights.forEach((light: pc.LightComponent) => {
                   (light as any).entity.destroy();
               });
           }
           
-          app.root.addChild(model);
+          app.root.addChild(m);
           
           // modelEntity.addComponent('rigidbody', { type: 'static' }); // check if helps TODO
           // modelEntity.addComponent('collision', { type: 'mesh' }); // for different models, adjust TODO
-          model.addComponent('rigidbody', { type: 'static' }); // check if helps TODO
-          model.addComponent('collision', { type: 'mesh' }); // for different models, adjust TODO
+          m.addComponent('rigidbody', { type: 'static' }); // check if helps TODO
+          m.addComponent('collision', { type: 'mesh' }); // for different models, adjust TODO
         
           // Search the entire model hierarchy to find the render component
-          const renderComponent = model.findComponent('render');
+          const renderComponent = m.findComponent('render');
 
           // Now, check if we found a render component and it has a material
           if (renderComponent && renderComponent.meshInstances[0]) {
+            console.log(`Configuring material for model: ${m.name}`);
             const material = renderComponent.meshInstances[0].material;
-            //material.diffuse = new pc.Color(1, 1, 1);  // Set base color to white. TODO: double-check color
+            //material.diffuse = new pc.Color(1, 1, 1);  // Set base color to white. TODO: double-check color, castShadows: false
             material.diffuse = new pc.Color(1, 1, 1);
 
                   // Set a unique glow color for each model
@@ -257,66 +241,35 @@
 
         app.root.addChild(camera);
 
-        // Create lights Manu: die lights
+        // Create lights
         const ambientLight = new pc.Entity('ambientLight');
-        ambientLight.addComponent('light', { type: 'ambient', color: new pc.Color(0.4, 0.4, 0.4) }); // TODO : play with this color
+        
+        ambientLight.addComponent('light', { type: 'ambient', color: new pc.Color(1, 1, 1) }); // TODO : play with this color, castShadows: false
         app.root.addChild(ambientLight);
 
-        const staticLight = new pc.Entity('staticLight');
+        // Static light has no effect currently
+        /* const staticLight = new pc.Entity('staticLight');
         staticLight.addComponent('light', {
             type: 'directional',
             intensity: 1.5,
             castShadows: true,
             shadowResolution: 1024,
-           /*  shadowBias: 0.2,
-            normalOffsetBias: 0.05, */
+            shadowBias: 0.2,
+            normalOffsetBias: 0.05
         });
-        staticLight.setEulerAngles(45, 30, 0);
-        app.root.addChild(staticLight);
+        staticLight.setEulerAngles(45, 30, 0); */
+        // app.root.addChild(staticLight);
 
         // TODO: Check: seems to have no effect
         const dynamicLight = new pc.Entity('MyDynamicLight');
         dynamicLight.addComponent('light', {
             type: 'point',
-            intensity: 0.2,
-            range: 30,
+            intensity: 0.6,
+            range: 10, // If this is small (3) , starts off Black when far away (TODO: bug with sqaured falloff?)
             color: new pc.Color(1, 1, 1.1),
+            /* TODO: test for performance castShadows: false, */
         });
         app.root.addChild(dynamicLight);
-
-        
-
-    // Load the camera script FIRST, as it's a dependency for scene interaction.
-    /* app.assets.add(assets.orbitCamera);
-    app.assets.load(assets.orbitCamera); */
-    
-    // Once the camera script is loaded, attach it and then load remaining assets.
-    /* app.assets.on(`load:${assets.orbitCamera.id}`, () => {
-        camera.addComponent('script');
-        if (camera.script) {
-          camera.script.create('orbitCamera', { attributes: { inertiaFactor: 0.05 } });
-        }
-
-        app.assets.add(assets.model);
-        app.assets.add(assets.aoMap);
-        app.assets.load(assets.model);
-        app.assets.load(assets.aoMap);
-    }); */
-    
-    // app.assets.on(`load:${assets.model.id}`, () => {
-
-// Instantiate model
-   //  });
-        // Add all remaining entities to the scene
-       /*  app.root.addChild(camera);
-        app.root.addChild(ambientLight);
-        app.root.addChild(staticLight);
-        app.root.addChild(dynamicLight);
-
-        if (camera.script && modelEntity) { // Ensure modelEntity is not null
-          (camera.script as any).orbitCamera.focusEntity = modelEntity;
-        }
-        */
 
         // Update UI
         const loadingText = document.querySelector('.loading-text') as HTMLElement;
@@ -387,7 +340,7 @@
 
       // Update the camera's focus to the newly visible model
       const focusEntity = isDark ? darkModel : model;
-      (cameraEntity.script as any).orbitCamera.focusEntity = focusEntity;
+      (cameraEntity.script).orbitCamera.focusEntity = focusEntity;
     }
   }
 </script>
@@ -395,13 +348,14 @@
 <style>
   .viewer-wrapper {
     position: relative;
-    width: 100%;
-    height: 600px;
+    /* width: 100%; */
+    /* height: 100%; */
     background-color: #1f1f1f;
+    margin: 5em 5em 5em 5em;
   }
   #playcanvas-canvas {
-    width: 100%;
-    height: 100%;
+    /* width: 100%;
+    height: 100%; */
     display: block;
   }
   .controls {

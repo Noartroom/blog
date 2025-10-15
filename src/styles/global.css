@@ -120,6 +120,10 @@ html.dark {
   color: #fff;
 }
 
+header {
+	margin: 6em;
+}
+
 /* distinct outline for focusable elements for keyboard users */
 :is(a, button):focus-visible {
   outline: 2px solid var(--accent, #5c6afd);
@@ -155,21 +159,6 @@ html.dark {
 
 /* --- Dynamic Lighting Engine Styles --- */
 
-/* body.light-engine-active::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: -1;
-  background: radial-gradient(
-    circle at var(--light-x) var(--light-y),
-    rgba(255, 230, 200, 0.25) 0%,
-    rgba(0, 0, 0, 0) 35%
-  );
-}
- */
-
 body.light-engine-active::before {
   content: '';
   position: fixed;
@@ -179,21 +168,22 @@ body.light-engine-active::before {
   z-index: 999; /* High z-index to be an overlay */
   
   /* The radial gradient creates the soft glow effect, driven by JS */
+  /* TODO: de-activate later and replace mouse with radial glow/torch/lamp */
   background: radial-gradient(
     circle at var(--light-x) var(--light-y),
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(0, 0, 0, 0) 35% /* made transparent (TODO: check) */
+    rgba(240, 233, 233, 0.20) 20%,
+    rgba(0, 0, 0, 0) 2%
   );
 }
-
-body.light-engine-active h1,
+  /* The text shadow offsets are calculated based on the light's position */
+/* TODO: activate later and expand for not only headings*/
+/* body.light-engine-active h1,
 body.light-engine-active h2 {
   transition: text-shadow 0.1s linear;
 
-  /* The text shadow offsets are calculated based on the light's position */
   text-shadow: 
     calc((50vw - var(--light-x)) / 40)
     calc((50vh - var(--light-y)) / 40)
     6px
-    rgba(0, 0, 0, 0.4);
-}
+    rgba(58, 55, 55, 0.4);
+} */
