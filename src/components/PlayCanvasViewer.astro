@@ -293,6 +293,24 @@
   document.addEventListener('DOMContentLoaded', () => {
     initializeViewer();
 
+    const canvas = document.getElementById('playcanvas-canvas');
+    if (canvas) {
+        canvas.addEventListener('mouseenter', () => {
+            if (pcApp && lightEngineActive) {
+                const light = pcApp.root.findByName('MyDynamicLight');
+                if (light) light.enabled = true;
+                console.log("Dynamic light enabled on mouse enter.");
+            }
+        });
+        canvas.addEventListener('mouseleave', () => {
+            if (pcApp) {
+                const light = pcApp.root.findByName('MyDynamicLight');
+                if (light) light.enabled = false;
+                console.log("Dynamic light disabled on mouse leave.");
+            }
+        });
+    }
+
     const themeToggleButton = document.getElementById('themeToggle'); // Assumes your button has id="themeToggle"
     if (themeToggleButton) {
       themeToggleButton.addEventListener('click', () => {
@@ -348,15 +366,11 @@
 <style>
   .viewer-wrapper {
     position: relative;
-    /* width: 100%; */
-    /* height: 100%; */
     background-color: #1f1f1f;
-    margin: 5em 5em 5em 5em;
   }
   #playcanvas-canvas {
-    /* width: 100%;
-    height: 100%; */
     display: block;
+    margin: 5em auto;
   }
   .controls {
     position: absolute;
